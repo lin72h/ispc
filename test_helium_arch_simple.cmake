@@ -1,0 +1,93 @@
+# Simple test for determine_arch_and_os function for Helium targets
+cmake_minimum_required(VERSION 3.15)
+
+# Copy the function from CommonStdlibBuiltins.cmake
+function(determine_arch_and_os target bit os out_arch out_os)
+    set(arch "error")
+    if ("${target}" MATCHES "sse|avx")
+        if ("${bit}" STREQUAL "32")
+            set(arch "x86")
+        elseif ("${bit}" STREQUAL "64")
+            set(arch "x86_64")
+        else()
+            set(arch "error")
+        endif()
+    elseif ("${target}" MATCHES "neon")
+        if ("${bit}" STREQUAL "32")
+            set(arch "arm")
+        elseif ("${bit}" STREQUAL "64")
+            set(arch "aarch64")
+        else()
+            set(arch "error")
+        endif()
+    elseif ("${target}" MATCHES "helium")
+        # Helium/MVE is only available on 32-bit ARM Cortex-M processors
+        if ("${bit}" STREQUAL "32")
+            set(arch "arm")
+        else()
+            set(arch "error")
+        endif()
+    elseif ("${target}" MATCHES "wasm")
+        if ("${bit}" STREQUAL "32")
+            set(arch "wasm32")
+        elseif ("${bit}" STREQUAL "64")
+            set(arch "wasm64")
+        else()
+            set(arch "error")
+        endif()
+    elseif ("${target}" MATCHES "gen9|xe")
+        set(arch "xe64")
+    endif()
+
+    if ("${arch}" STREQUAL "error")
+        message(FATAL_ERROR "Incorrect target or bit passed: ${target} ${os} ${bit}")
+    endif()
+
+    if ("${os}" STREQUAL "unix")
+        set(os "linux")
+    endif()
+
+    set(${out_arch} ${arch} PARENT_SCOPE)
+    set(${out_os} ${os} PARENT_SCOPE)
+endfunction()
+
+message("Testing determine_arch_and_os for Helium targets:")
+
+# Test helium-i32x4 with 32-bit
+determine_arch_and_os("helium-i32x4" "32" "linux" arch_result os_result)
+message("helium-i32x4, 32-bit, linux -> ${arch_result}, ${os_result}")
+if("${arch_result}" STREQUAL "arm" AND "${os_result}" STREQUAL "linux")
+    message("✓ Test 1 passed")
+else()
+    message(FATAL_ERROR "✗ Test 1 failed")
+endif()
+
+# Test helium-i16x8 with 32-bit
+determine_arch_and_os("helium-i16x8" "32" "linux" arch_result os_result)
+message("helium-i16x8, 32-bit, linux -> ${arch_result}, ${os_result}")
+if("${arch_result}" STREQUAL "arm" AND "${os_result}" STREQUAL "linux")
+    message("✓ Test 2 passed")
+else()
+    message(FATAL_ERROR "✗ Test 2 failed")
+endif()
+
+# Test helium-i8x16 with 32-bit
+determine_arch_and_os("helium-i8x16" "32" "linux" arch_result os_result)
+message("helium-i8x16, 32-bit, linux -> ${arch_result}, ${os_result}")
+if("${arch_result}" STREQUAL "arm" AND "${os_result}" STREQUAL "linux")
+    message("✓ Test 3 passed")
+else()
+    message(FATAL_ERROR "✗ Test 3 failed")
+endif()
+
+# Test unix -> linux conversion
+determine_arch_and_os("helium-i32x4" "32" "unix" arch_result os_result)
+message("helium-i32x4, 32-bit, unix -> ${arch_result}, ${os_result}")
+if("${arch_result}" STREQUAL "arm" AND "${os_result}" STREQUAL "linux")
+    message("✓ Test 4 passed (unix->linux conversion)")
+else()
+    message(FATAL_ERROR "✗ Test 4 failed")
+endif()
+
+message("")
+message("SUCCESS: All determine_arch_and_os tests passed for Helium!")

@@ -84,6 +84,9 @@ enum class ISPCTarget {
     neon_i16x16,
     neon_i32x4,
     neon_i32x8,
+    helium_i8x16,
+    helium_i16x8,
+    helium_i32x4,
     wasm_i32x4,
     gen9_x8,
     gen9_x16,
@@ -121,6 +124,7 @@ std::pair<std::vector<ISPCTarget>, std::string> ParseISPCTargets(const char *tar
 std::string ISPCTargetToString(ISPCTarget target);
 bool ISPCTargetIsX86(ISPCTarget target);
 bool ISPCTargetIsNeon(ISPCTarget target);
+bool ISPCTargetIsHelium(ISPCTarget target);
 bool ISPCTargetIsWasm(ISPCTarget target);
 bool ISPCTargetIsGen(ISPCTarget target);
 bool ISPCTargetIsGeneric(ISPCTarget target);

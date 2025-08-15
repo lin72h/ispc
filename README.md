@@ -55,7 +55,7 @@ There are a few key principles in the design of `ispc`:
 and optimization and is [hosted on github](http://github.com/ispc/ispc). It
 supports Windows, macOS, and Linux as a host operating system and also capable
 to target Android, iOS, and PS4/PS5.  It currently supports multiple flavours
-of x86 (SSE2, SSE4, AVX, AVX2, and AVX512), ARM (NEON), and Intel® GPU
+of x86 (SSE2, SSE4, AVX, AVX2, and AVX512), ARM (NEON and Helium/MVE), and Intel® GPU
 architectures (Gen9 and Xe family).
 
 ## Features
@@ -74,8 +74,8 @@ architectures (Gen9 and Xe family).
     and with application data structures.
             
   * Portability across over a decade of CPU generations: `ispc` has targets for
-    x86 SSE2, SSE4, AVX, AVX2, and AVX512, as well as ARM NEON and recent
-    Intel® GPUs.
+    x86 SSE2, SSE4, AVX, AVX2, and AVX512, as well as ARM NEON, ARM Helium/MVE 
+    for Cortex-M processors, and recent Intel® GPUs.
 
   * Portability across operating systems: Microsoft Windows, macOS, Linux, and
     FreeBSD are all supported by `ispc`.

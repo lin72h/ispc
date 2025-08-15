@@ -213,8 +213,17 @@ ISPCTarget operator++(ISPCTarget &target, int dummy) {
     static_assert(static_cast<underlying>(ISPCTarget::neon_i32x8) ==
                       static_cast<underlying>(ISPCTarget::neon_i32x4) + 1,
                   "Enum ISPCTarget is not sequential");
-    static_assert(static_cast<underlying>(ISPCTarget::wasm_i32x4) ==
+    static_assert(static_cast<underlying>(ISPCTarget::helium_i8x16) ==
                       static_cast<underlying>(ISPCTarget::neon_i32x8) + 1,
+                  "Enum ISPCTarget is not sequential");
+    static_assert(static_cast<underlying>(ISPCTarget::helium_i16x8) ==
+                      static_cast<underlying>(ISPCTarget::helium_i8x16) + 1,
+                  "Enum ISPCTarget is not sequential");
+    static_assert(static_cast<underlying>(ISPCTarget::helium_i32x4) ==
+                      static_cast<underlying>(ISPCTarget::helium_i16x8) + 1,
+                  "Enum ISPCTarget is not sequential");
+    static_assert(static_cast<underlying>(ISPCTarget::wasm_i32x4) ==
+                      static_cast<underlying>(ISPCTarget::helium_i32x4) + 1,
                   "Enum ISPCTarget is not sequential");
     static_assert(static_cast<underlying>(ISPCTarget::gen9_x8) == static_cast<underlying>(ISPCTarget::wasm_i32x4) + 1,
                   "Enum ISPCTarget is not sequential");
@@ -445,6 +454,12 @@ ISPCTarget ParseISPCTarget(std::string target) {
         return ISPCTarget::neon_i32x4;
     } else if (target == "neon-i32x8") {
         return ISPCTarget::neon_i32x8;
+    } else if (target == "helium-i8x16") {
+        return ISPCTarget::helium_i8x16;
+    } else if (target == "helium-i16x8") {
+        return ISPCTarget::helium_i16x8;
+    } else if (target == "helium-i32x4" || target == "helium") {
+        return ISPCTarget::helium_i32x4;
     } else if (target == "wasm-i32x4") {
         return ISPCTarget::wasm_i32x4;
     } else if (target == "gen9-x8") {
@@ -638,6 +653,12 @@ std::string ISPCTargetToString(ISPCTarget target) {
         return "neon-i32x4";
     case ISPCTarget::neon_i32x8:
         return "neon-i32x8";
+    case ISPCTarget::helium_i8x16:
+        return "helium-i8x16";
+    case ISPCTarget::helium_i16x8:
+        return "helium-i16x8";
+    case ISPCTarget::helium_i32x4:
+        return "helium-i32x4";
     case ISPCTarget::wasm_i32x4:
         return "wasm-i32x4";
     case ISPCTarget::gen9_x8:
@@ -763,6 +784,17 @@ bool ISPCTargetIsNeon(ISPCTarget target) {
     case ISPCTarget::neon_i16x16:
     case ISPCTarget::neon_i32x4:
     case ISPCTarget::neon_i32x8:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool ISPCTargetIsHelium(ISPCTarget target) {
+    switch (target) {
+    case ISPCTarget::helium_i8x16:
+    case ISPCTarget::helium_i16x8:
+    case ISPCTarget::helium_i32x4:
         return true;
     default:
         return false;
