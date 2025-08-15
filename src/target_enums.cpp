@@ -58,7 +58,9 @@ Arch operator++(Arch &arch, int dummy) {
                   "Enum Arch is not sequential");
     static_assert(static_cast<underlying>(Arch::xe64) == static_cast<underlying>(Arch::wasm64) + 1,
                   "Enum Arch is not sequential");
-    static_assert(static_cast<underlying>(Arch::error) == static_cast<underlying>(Arch::xe64) + 1,
+    static_assert(static_cast<underlying>(Arch::amdgcn) == static_cast<underlying>(Arch::xe64) + 1,
+                  "Enum Arch is not sequential");
+    static_assert(static_cast<underlying>(Arch::error) == static_cast<underlying>(Arch::amdgcn) + 1,
                   "Enum Arch is not sequential");
     return arch = static_cast<Arch>(static_cast<underlying>(arch) + 1);
 }
@@ -247,8 +249,26 @@ ISPCTarget operator++(ISPCTarget &target, int dummy) {
     static_assert(static_cast<underlying>(ISPCTarget::xe2lpg_x32) ==
                       static_cast<underlying>(ISPCTarget::xe2lpg_x16) + 1,
                   "Enum ISPCTarget is not sequential");
-    static_assert(static_cast<underlying>(ISPCTarget::generic_i1x4) ==
+    static_assert(static_cast<underlying>(ISPCTarget::amdgcn9_x16) ==
                       static_cast<underlying>(ISPCTarget::xe2lpg_x32) + 1,
+                  "Enum ISPCTarget is not sequential");
+    static_assert(static_cast<underlying>(ISPCTarget::amdgcn9_x32) ==
+                      static_cast<underlying>(ISPCTarget::amdgcn9_x16) + 1,
+                  "Enum ISPCTarget is not sequential");
+    static_assert(static_cast<underlying>(ISPCTarget::amdgcn9_x64) ==
+                      static_cast<underlying>(ISPCTarget::amdgcn9_x32) + 1,
+                  "Enum ISPCTarget is not sequential");
+    static_assert(static_cast<underlying>(ISPCTarget::amdrdna3_x16) ==
+                      static_cast<underlying>(ISPCTarget::amdgcn9_x64) + 1,
+                  "Enum ISPCTarget is not sequential");
+    static_assert(static_cast<underlying>(ISPCTarget::amdrdna3_x32) ==
+                      static_cast<underlying>(ISPCTarget::amdrdna3_x16) + 1,
+                  "Enum ISPCTarget is not sequential");
+    static_assert(static_cast<underlying>(ISPCTarget::amdrdna3_x64) ==
+                      static_cast<underlying>(ISPCTarget::amdrdna3_x32) + 1,
+                  "Enum ISPCTarget is not sequential");
+    static_assert(static_cast<underlying>(ISPCTarget::generic_i1x4) ==
+                      static_cast<underlying>(ISPCTarget::amdrdna3_x64) + 1,
                   "Enum ISPCTarget is not sequential");
     static_assert(static_cast<underlying>(ISPCTarget::generic_i1x8) ==
                       static_cast<underlying>(ISPCTarget::generic_i1x4) + 1,
@@ -306,6 +326,8 @@ Arch ParseArch(std::string arch) {
         return Arch::wasm64;
     } else if (arch == "xe64") {
         return Arch::xe64;
+    } else if (arch == "amdgcn") {
+        return Arch::amdgcn;
     }
     return Arch::error;
 }
@@ -328,6 +350,8 @@ std::string ArchToString(Arch arch) {
         return "wasm64";
     case Arch::xe64:
         return "xe64";
+    case Arch::amdgcn:
+        return "amdgcn";
     case Arch::error:
         return "error";
     default:
@@ -475,6 +499,18 @@ ISPCTarget ParseISPCTarget(std::string target) {
         return ISPCTarget::xe2lpg_x16;
     } else if (target == "xe2lpg-x32") {
         return ISPCTarget::xe2lpg_x32;
+    } else if (target == "amdgcn9-x16") {
+        return ISPCTarget::amdgcn9_x16;
+    } else if (target == "amdgcn9-x32") {
+        return ISPCTarget::amdgcn9_x32;
+    } else if (target == "amdgcn9-x64") {
+        return ISPCTarget::amdgcn9_x64;
+    } else if (target == "amdrdna3-x16") {
+        return ISPCTarget::amdrdna3_x16;
+    } else if (target == "amdrdna3-x32") {
+        return ISPCTarget::amdrdna3_x32;
+    } else if (target == "amdrdna3-x64") {
+        return ISPCTarget::amdrdna3_x64;
     } else if (target == "generic-i1x4") {
         return ISPCTarget::generic_i1x4;
     } else if (target == "generic-i1x8") {
@@ -668,6 +704,18 @@ std::string ISPCTargetToString(ISPCTarget target) {
         return "xe2lpg-x16";
     case ISPCTarget::xe2lpg_x32:
         return "xe2lpg-x32";
+    case ISPCTarget::amdgcn9_x16:
+        return "amdgcn9-x16";
+    case ISPCTarget::amdgcn9_x32:
+        return "amdgcn9-x32";
+    case ISPCTarget::amdgcn9_x64:
+        return "amdgcn9-x64";
+    case ISPCTarget::amdrdna3_x16:
+        return "amdrdna3-x16";
+    case ISPCTarget::amdrdna3_x32:
+        return "amdrdna3-x32";
+    case ISPCTarget::amdrdna3_x64:
+        return "amdrdna3-x64";
     case ISPCTarget::generic_i1x4:
         return "generic-i1x4";
     case ISPCTarget::generic_i1x8:
@@ -794,6 +842,20 @@ bool ISPCTargetIsGen(ISPCTarget target) {
     case ISPCTarget::xe2hpg_x32:
     case ISPCTarget::xe2lpg_x16:
     case ISPCTarget::xe2lpg_x32:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool ISPCTargetIsAMDGPU(ISPCTarget target) {
+    switch (target) {
+    case ISPCTarget::amdgcn9_x16:
+    case ISPCTarget::amdgcn9_x32:
+    case ISPCTarget::amdgcn9_x64:
+    case ISPCTarget::amdrdna3_x16:
+    case ISPCTarget::amdrdna3_x32:
+    case ISPCTarget::amdrdna3_x64:
         return true;
     default:
         return false;

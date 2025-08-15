@@ -26,7 +26,7 @@ std::string OSToString(TargetOS os);
 std::string OSToLowerString(TargetOS os);
 TargetOS GetHostOS();
 
-enum class Arch { none, x86, x86_64, arm, aarch64, wasm32, wasm64, xe64, error };
+enum class Arch { none, x86, x86_64, arm, aarch64, wasm32, wasm64, xe64, amdgcn, error };
 Arch operator++(Arch &, int);
 
 Arch ParseArch(std::string arch);
@@ -99,6 +99,12 @@ enum class ISPCTarget {
     xe2hpg_x32,
     xe2lpg_x16,
     xe2lpg_x32,
+    amdgcn9_x16,
+    amdgcn9_x32,
+    amdgcn9_x64,
+    amdrdna3_x16,
+    amdrdna3_x32,
+    amdrdna3_x64,
     generic_i1x4,
     generic_i1x8,
     generic_i1x16,
@@ -123,5 +129,6 @@ bool ISPCTargetIsX86(ISPCTarget target);
 bool ISPCTargetIsNeon(ISPCTarget target);
 bool ISPCTargetIsWasm(ISPCTarget target);
 bool ISPCTargetIsGen(ISPCTarget target);
+bool ISPCTargetIsAMDGPU(ISPCTarget target);
 bool ISPCTargetIsGeneric(ISPCTarget target);
 } // namespace ispc

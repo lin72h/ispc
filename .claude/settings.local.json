@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(cmake:*)",
+      "Bash(brew list:*)",
+      "Bash(clang++:*)",
+      "Bash(./test_helium_enums)",
+      "Bash(m4:*)",
+      "Bash(chmod:*)",
+      "Bash(./test_helium_comprehensive.sh:*)",
+      "Bash(./integration_test)",
+      "Bash(./test_without_llvm.sh:*)",
+      "Bash(clang:*)",
+      "Bash(llc:*)",
+      "Bash(/usr/bin/clang:*)",
+      "Bash(grep:*)"
+    ],
+    "defaultMode": "acceptEdits",
+    "additionalDirectories": [
+      "/usr/local/bin",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr"
+    ]
+  }
+}

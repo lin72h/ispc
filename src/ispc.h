@@ -266,6 +266,10 @@ class Target {
         XE2HPG,
         XE2LPG,
 #endif
+#ifdef ISPC_AMDGPU_ENABLED
+        AMDGCN9,
+        AMDRDNA3,
+#endif
         NUM_ISAS
     };
 
@@ -278,6 +282,13 @@ class Target {
         xe2_hpg,
         xe2_lpg,
         xe_hpc,
+    };
+#endif
+
+#ifdef ISPC_AMDGPU_ENABLED
+    enum class AMDGPUPlatform {
+        gcn9,
+        rdna3,
     };
 #endif
 
@@ -373,10 +384,24 @@ class Target {
 #endif
     }
 
+    bool isAMDGPUTarget() {
+#ifdef ISPC_AMDGPU_ENABLED
+        return m_isa == Target::AMDGCN9 || m_isa == Target::AMDRDNA3;
+#else
+        return false;
+#endif
+    }
+
 #ifdef ISPC_XE_ENABLED
     XePlatform getXePlatform() const;
     uint32_t getXeGrfSize() const;
     bool hasXePrefetch() const;
+#endif
+
+#ifdef ISPC_AMDGPU_ENABLED
+    AMDGPUPlatform getAMDGPUPlatform() const;
+    uint32_t getAMDGPUWavefrontSize() const;
+    bool hasAMDGPUBufferOps() const;
 #endif
 
     Arch getArch() const { return m_arch; }

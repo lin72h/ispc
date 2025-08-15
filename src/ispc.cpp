@@ -278,6 +278,10 @@ static bool lIsTargetValidforArch(ISPCTarget target, Arch arch) {
         if (arch != Arch::xe64) {
             ret = false;
         }
+    } else if (ISPCTargetIsAMDGPU(target)) {
+        if (arch != Arch::amdgcn) {
+            ret = false;
+        }
     }
 
     return ret;
@@ -395,6 +399,10 @@ typedef enum {
     GPU_BMG_G21,
     GPU_LNL_M,
 #endif
+#ifdef ISPC_AMDGPU_ENABLED
+    GPU_AMDGCN9,
+    GPU_AMDRDNA3,
+#endif
     sizeofDeviceType
 } DeviceType;
 
@@ -465,6 +473,10 @@ std::map<DeviceType, std::set<std::string>> CPUFeatures = {
     {GPU_MTL_H, {}},
     {GPU_BMG_G21, {}},
     {GPU_LNL_M, {}},
+#endif
+#ifdef ISPC_AMDGPU_ENABLED
+    {GPU_AMDGCN9, {}},
+    {GPU_AMDRDNA3, {}},
 #endif
 };
 
@@ -594,6 +606,15 @@ class AllCPUs {
         names[GPU_BMG_G21].push_back("bmg-g21");
         names[GPU_LNL_M].push_back("lnl-m");
 #endif
+#ifdef ISPC_AMDGPU_ENABLED
+        names[GPU_AMDGCN9].push_back("gfx900");
+        names[GPU_AMDGCN9].push_back("gfx906");
+        names[GPU_AMDGCN9].push_back("gfx908");
+        names[GPU_AMDGCN9].push_back("gfx90a");
+        names[GPU_AMDRDNA3].push_back("gfx1100");
+        names[GPU_AMDRDNA3].push_back("gfx1101");
+        names[GPU_AMDRDNA3].push_back("gfx1102");
+#endif
 
         Assert(names.size() == sizeofDeviceType);
 
@@ -706,6 +727,11 @@ class AllCPUs {
             Set(GPU_BMG_G21, GPU_MTL_U, GPU_MTL_H, GPU_ACM_G10, GPU_ACM_G11, GPU_ACM_G12, GPU_TGLLP, GPU_SKL, CPU_None);
         compat[GPU_LNL_M] =
             Set(GPU_LNL_M, GPU_MTL_U, GPU_MTL_H, GPU_ACM_G10, GPU_ACM_G11, GPU_ACM_G12, GPU_TGLLP, GPU_SKL, CPU_None);
+#endif
+
+#ifdef ISPC_AMDGPU_ENABLED
+        compat[GPU_AMDGCN9] = Set(GPU_AMDGCN9, CPU_None);
+        compat[GPU_AMDRDNA3] = Set(GPU_AMDRDNA3, GPU_AMDGCN9, CPU_None);
 #endif
     }
 
@@ -1074,8 +1100,8 @@ Target::Target(Arch arch, const char *cpu, ISPCTarget ispc_target, PICLevel picL
         return;
     }
 
-    // FP16 support for Xe and Arm. For x86 set is individually for appropriate targets.
-    if (ISPCTargetIsGen(m_ispc_target) || ISPCTargetIsNeon(m_ispc_target)) {
+    // FP16 support for Xe, AMDGPU and Arm. For x86 set is individually for appropriate targets.
+    if (ISPCTargetIsGen(m_ispc_target) || ISPCTargetIsAMDGPU(m_ispc_target) || ISPCTargetIsNeon(m_ispc_target)) {
         m_hasFp16Support = true;
     }
 
@@ -2095,7 +2121,121 @@ Target::Target(Arch arch, const char *cpu, ISPCTarget ispc_target, PICLevel picL
         this->m_hasGather = this->m_hasScatter = true;
         CPUfromISA = GPU_LNL_M;
         break;
+#endif
+#ifdef ISPC_AMDGPU_ENABLED
+    case ISPCTarget::amdgcn9_x16:
+        this->m_isa = Target::AMDGCN9;
+        this->m_nativeVectorWidth = 16;
+        this->m_nativeVectorAlignment = 64;
+        this->m_vectorWidth = 16;
+        this->m_dataTypeWidth = 32;
+        this->m_hasHalfConverts = true;
+        this->m_hasHalfFullSupport = true;
+        this->m_maskingIsFree = true;
+        this->m_maskBitCount = 1;
+        this->m_hasSaturatingArithmetic = true;
+        this->m_hasTranscendentals = true;
+        this->m_hasTrigonometry = true;
+        this->m_hasGather = this->m_hasScatter = true;
+        this->m_hasFp64Support = true;
+        CPUfromISA = GPU_AMDGCN9;
+        break;
+    case ISPCTarget::amdgcn9_x32:
+        this->m_isa = Target::AMDGCN9;
+        this->m_nativeVectorWidth = 32;
+        this->m_nativeVectorAlignment = 64;
+        this->m_vectorWidth = 32;
+        this->m_dataTypeWidth = 32;
+        this->m_hasHalfConverts = true;
+        this->m_hasHalfFullSupport = true;
+        this->m_maskingIsFree = true;
+        this->m_maskBitCount = 1;
+        this->m_hasSaturatingArithmetic = true;
+        this->m_hasTranscendentals = true;
+        this->m_hasTrigonometry = true;
+        this->m_hasGather = this->m_hasScatter = true;
+        this->m_hasFp64Support = true;
+        CPUfromISA = GPU_AMDGCN9;
+        break;
+    case ISPCTarget::amdgcn9_x64:
+        this->m_isa = Target::AMDGCN9;
+        this->m_nativeVectorWidth = 64;
+        this->m_nativeVectorAlignment = 64;
+        this->m_vectorWidth = 64;
+        this->m_dataTypeWidth = 32;
+        this->m_hasHalfConverts = true;
+        this->m_hasHalfFullSupport = true;
+        this->m_maskingIsFree = true;
+        this->m_maskBitCount = 1;
+        this->m_hasSaturatingArithmetic = true;
+        this->m_hasTranscendentals = true;
+        this->m_hasTrigonometry = true;
+        this->m_hasGather = this->m_hasScatter = true;
+        this->m_hasFp64Support = true;
+        CPUfromISA = GPU_AMDGCN9;
+        break;
+    case ISPCTarget::amdrdna3_x16:
+        this->m_isa = Target::AMDRDNA3;
+        this->m_nativeVectorWidth = 16;
+        this->m_nativeVectorAlignment = 64;
+        this->m_vectorWidth = 16;
+        this->m_dataTypeWidth = 32;
+        this->m_hasHalfConverts = true;
+        this->m_hasHalfFullSupport = true;
+        this->m_maskingIsFree = true;
+        this->m_maskBitCount = 1;
+        this->m_hasSaturatingArithmetic = true;
+        this->m_hasTranscendentals = true;
+        this->m_hasTrigonometry = true;
+        this->m_hasGather = this->m_hasScatter = true;
+        this->m_hasFp64Support = true;
+        CPUfromISA = GPU_AMDRDNA3;
+        break;
+    case ISPCTarget::amdrdna3_x32:
+        this->m_isa = Target::AMDRDNA3;
+        this->m_nativeVectorWidth = 32;
+        this->m_nativeVectorAlignment = 64;
+        this->m_vectorWidth = 32;
+        this->m_dataTypeWidth = 32;
+        this->m_hasHalfConverts = true;
+        this->m_hasHalfFullSupport = true;
+        this->m_maskingIsFree = true;
+        this->m_maskBitCount = 1;
+        this->m_hasSaturatingArithmetic = true;
+        this->m_hasTranscendentals = true;
+        this->m_hasTrigonometry = true;
+        this->m_hasGather = this->m_hasScatter = true;
+        this->m_hasFp64Support = true;
+        CPUfromISA = GPU_AMDRDNA3;
+        break;
+    case ISPCTarget::amdrdna3_x64:
+        this->m_isa = Target::AMDRDNA3;
+        this->m_nativeVectorWidth = 64;
+        this->m_nativeVectorAlignment = 64;
+        this->m_vectorWidth = 64;
+        this->m_dataTypeWidth = 32;
+        this->m_hasHalfConverts = true;
+        this->m_hasHalfFullSupport = true;
+        this->m_maskingIsFree = true;
+        this->m_maskBitCount = 1;
+        this->m_hasSaturatingArithmetic = true;
+        this->m_hasTranscendentals = true;
+        this->m_hasTrigonometry = true;
+        this->m_hasGather = this->m_hasScatter = true;
+        this->m_hasFp64Support = true;
+        CPUfromISA = GPU_AMDRDNA3;
+        break;
 #else
+    case ISPCTarget::amdgcn9_x16:
+    case ISPCTarget::amdgcn9_x32:
+    case ISPCTarget::amdgcn9_x64:
+    case ISPCTarget::amdrdna3_x16:
+    case ISPCTarget::amdrdna3_x32:
+    case ISPCTarget::amdrdna3_x64:
+        unsupported_target = true;
+        break;
+#endif
+#ifndef ISPC_XE_ENABLED
     case ISPCTarget::gen9_x8:
     case ISPCTarget::gen9_x16:
     case ISPCTarget::xelp_x8:
@@ -2259,8 +2399,8 @@ Target::Target(Arch arch, const char *cpu, ISPCTarget ispc_target, PICLevel picL
             options.FunctionSections = true;
         }
 
-        // For Xe target we do not need to create target/targetMachine
-        if (!isXeTarget()) {
+        // For Xe and AMDGPU targets we do not need to create target/targetMachine
+        if (!isXeTarget() && !isAMDGPUTarget()) {
 #if ISPC_LLVM_VERSION >= ISPC_LLVM_21_0
             m_targetMachine =
                 m_target->createTargetMachine(triple, m_cpu, featuresString, options, relocModel, mcModel);
@@ -2310,6 +2450,12 @@ Target::Target(Arch arch, const char *cpu, ISPCTarget ispc_target, PICLevel picL
                                              : "e-p:32:32-i64:64-v16:16-v24:32-v32:32-v48:64-v96:128-v192:256-v256:"
                                                "256-v512:512-v1024:1024-n8:16:32:64";
         }
+        if (isAMDGPUTarget()) {
+            // AMDGPU data layout - 64-bit addresses, native support for various vector widths
+            dl_string = "e-p:64:64-p1:64:64-p2:32:32-p3:32:32-p4:64:64-p5:32:32-p6:32:32-"
+                       "i64:64-v16:16-v24:32-v32:32-v48:64-v96:128-v192:256-v256:256-v512:512-v1024:1024-v2048:2048-"
+                       "n32:64-S32-A5-G1-ni:7";
+        }
 
         // 2. Finally set member data
         m_dataLayout = new llvm::DataLayout(dl_string);
@@ -2327,6 +2473,12 @@ Target::Target(Arch arch, const char *cpu, ISPCTarget ispc_target, PICLevel picL
             fattrBuilder->addAttribute("target-cpu", this->m_cpu);
         }
 #endif
+#ifdef ISPC_AMDGPU_ENABLED
+        if (isAMDGPUTarget()) {
+            fattrBuilder->addAttribute("target-cpu", this->m_cpu);
+            fattrBuilder->addAttribute("target-features", "+wavefrontsize64");
+        }
+#endif
         for (auto const &f_attr : m_funcAttributes) {
             fattrBuilder->addAttribute(f_attr.first, f_attr.second);
         }
@@ -2339,7 +2491,7 @@ Target::Target(Arch arch, const char *cpu, ISPCTarget ispc_target, PICLevel picL
     m_valid = !error;
 
     if (printTarget) {
-        if (!isXeTarget()) {
+        if (!isXeTarget() && !isAMDGPUTarget()) {
             if (m_targetMachine) {
                 lPrintTargetInfo("CPU", m_targetMachine->getTargetTriple().str(), m_targetMachine->getTargetCPU().str(),
                                  m_targetMachine->getTargetFeatureString().str());
@@ -2467,6 +2619,8 @@ llvm::Triple Target::GetTriple() const {
             triple.setArchName("aarch64");
         } else if (m_arch == Arch::xe64) {
             triple.setArchName("spir64");
+        } else if (m_arch == Arch::amdgcn) {
+            triple.setArchName("amdgcn");
         } else {
             Error(SourcePos(), "Unknown arch.");
             exit(1);
@@ -2479,9 +2633,17 @@ llvm::Triple Target::GetTriple() const {
             return triple;
         }
 #endif
+#ifdef ISPC_AMDGPU_ENABLED
+        if (m_arch == Arch::amdgcn) {
+            //"amdgcn-amd-amdhsa"
+            triple.setVendor(llvm::Triple::VendorType::AMD);
+            triple.setOS(llvm::Triple::OSType::AMDHSA);
+            return triple;
+        }
+#endif
         triple.setVendor(llvm::Triple::VendorType::UnknownVendor);
         triple.setOS(llvm::Triple::OSType::Linux);
-        if (m_arch == Arch::x86 || m_arch == Arch::x86_64 || m_arch == Arch::aarch64 || m_arch == Arch::xe64) {
+        if (m_arch == Arch::x86 || m_arch == Arch::x86_64 || m_arch == Arch::aarch64 || m_arch == Arch::xe64 || m_arch == Arch::amdgcn) {
             triple.setEnvironment(llvm::Triple::EnvironmentType::GNU);
         } else if (m_arch == Arch::arm) {
             triple.setEnvironment(llvm::Triple::EnvironmentType::GNUEABIHF);
@@ -2663,6 +2825,12 @@ const char *Target::ISAToString(ISA isa) {
     case Target::XE2LPG:
         return "xe2lpg";
 #endif
+#ifdef ISPC_AMDGPU_ENABLED
+    case Target::AMDGCN9:
+        return "amdgcn9";
+    case Target::AMDRDNA3:
+        return "amdrdna3";
+#endif
     default:
         FATAL("Unhandled target in ISAToString()");
     }
@@ -2697,6 +2865,14 @@ const char *Target::ISAToTargetString(ISA isa) {
         return "xelpg-x16";
     case Target::XE2HPG:
         return "xe2hpg-x16";
+    case Target::XE2LPG:
+        return "xe2lpg-x16";
+#endif
+#ifdef ISPC_AMDGPU_ENABLED
+    case Target::AMDGCN9:
+        return "amdgcn9-x16";
+    case Target::AMDRDNA3:
+        return "amdrdna3-x16";
 #endif
     case Target::SSE2:
         return "sse2-i32x4";
@@ -2829,7 +3005,26 @@ Target::ISA Target::TargetToISA(ISPCTarget target) {
     case ISPCTarget::xe2lpg_x16:
     case ISPCTarget::xe2lpg_x32:
         return Target::ISA::XE2LPG;
-#else  // ISPC_XE_ENABLED
+#endif // ISPC_XE_ENABLED
+#ifdef ISPC_AMDGPU_ENABLED
+    case ISPCTarget::amdgcn9_x16:
+    case ISPCTarget::amdgcn9_x32:
+    case ISPCTarget::amdgcn9_x64:
+        return Target::ISA::AMDGCN9;
+    case ISPCTarget::amdrdna3_x16:
+    case ISPCTarget::amdrdna3_x32:
+    case ISPCTarget::amdrdna3_x64:
+        return Target::ISA::AMDRDNA3;
+#else  // ISPC_AMDGPU_ENABLED
+    case ISPCTarget::amdgcn9_x16:
+    case ISPCTarget::amdgcn9_x32:
+    case ISPCTarget::amdgcn9_x64:
+    case ISPCTarget::amdrdna3_x16:
+    case ISPCTarget::amdrdna3_x32:
+    case ISPCTarget::amdrdna3_x64:
+        return Target::ISA::NUM_ISAS;
+#endif // ISPC_AMDGPU_ENABLED
+#ifndef ISPC_XE_ENABLED
     case ISPCTarget::gen9_x8:
     case ISPCTarget::gen9_x16:
     case ISPCTarget::xelp_x8:
@@ -3025,6 +3220,45 @@ bool Target::hasXePrefetch() const {
         return true;
     }
     return false;
+}
+#endif
+
+#ifdef ISPC_AMDGPU_ENABLED
+Target::AMDGPUPlatform Target::getAMDGPUPlatform() const {
+    AllCPUs a;
+    switch (a.GetTypeFromName(m_cpu)) {
+    case GPU_AMDGCN9:
+        return AMDGPUPlatform::gcn9;
+    case GPU_AMDRDNA3:
+        return AMDGPUPlatform::rdna3;
+    default:
+        return AMDGPUPlatform::gcn9;
+    }
+    return AMDGPUPlatform::gcn9;
+}
+
+uint32_t Target::getAMDGPUWavefrontSize() const {
+    switch (getAMDGPUPlatform()) {
+    case AMDGPUPlatform::gcn9:
+        return 64;  // GCN uses 64-wide wavefronts
+    case AMDGPUPlatform::rdna3:
+        return 32;  // RDNA3 uses 32-wide wavefronts
+    default:
+        return 64;
+    }
+    return 64;
+}
+
+bool Target::hasAMDGPUBufferOps() const {
+    switch (getAMDGPUPlatform()) {
+    case AMDGPUPlatform::gcn9:
+        return true;
+    case AMDGPUPlatform::rdna3:
+        return true;
+    default:
+        return true;
+    }
+    return true;
 }
 #endif
 

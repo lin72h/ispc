@@ -154,6 +154,7 @@ option(X86_ENABLED "Enable x86 support" ${X86_HOST})
 option(ARM_ENABLED "Enable ARM support" ${LLVM_SUPPORTS_ARM})
 option(WASM_ENABLED "Enable experimental Web Assembly support" OFF)
 option(XE_ENABLED "Enable Intel Xe support" OFF)
+option(AMDGPU_ENABLED "Enable AMD GPU support" OFF)
 
 option(ISPC_CROSS "Build ISPC with cross compilation support" OFF)
 # Default settings for cross compilation
@@ -354,8 +355,8 @@ find_package(FLEX 2.6 REQUIRED)
         )
     endif()
 
-if (NOT X86_ENABLED AND NOT ARM_ENABLED AND NOT WASM_ENABLED AND NOT XE_ENABLED)
-    message( FATAL_ERROR "Either X86, ARM, WASM or XE targets need to be enabled.")
+if (NOT X86_ENABLED AND NOT ARM_ENABLED AND NOT WASM_ENABLED AND NOT XE_ENABLED AND NOT AMDGPU_ENABLED)
+    message( FATAL_ERROR "Either X86, ARM, WASM, XE or AMDGPU targets need to be enabled.")
 endif ()
 
 # All possible ISPC targets
@@ -614,6 +615,10 @@ endif()
 
 if (XE_ENABLED)
     list(APPEND COMPILE_DEFINITIONS ISPC_XE_ENABLED)
+endif()
+
+if (AMDGPU_ENABLED)
+    list(APPEND COMPILE_DEFINITIONS ISPC_AMDGPU_ENABLED)
 endif()
 
 if (WASM_ENABLED)
